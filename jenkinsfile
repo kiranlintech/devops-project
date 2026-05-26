@@ -1,12 +1,12 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "YOUR_DOCKERHUB_USERNAME/flask-devops"
+        IMAGE_NAME = "kiranlintech/flask-devops"
     }
     stages {
         stage('Pull Code') {
             steps {
-                git 'YOUR_GITHUB_REPO'
+                git 'git@github.com:kiranlintech/devops-project.git'
             }
         }
         stage('OWASP Dependency Check') {
@@ -21,8 +21,8 @@ pipeline {
                     sonar-scanner \
                     -Dsonar.projectKey=flask-app \
                     -Dsonar.sources=. \
-                    -Dsonar.host.url=http://YOUR_SERVER_IP:9000 \
-                    -Dsonar.login=YOUR_TOKEN
+                    -Dsonar.host.url=http://192.168.5.9:9000 \
+                    -Dsonar.login=squ_3d59ee098a34a6364046fb95f15aa1eeabc0da23
                     '''
                 }
             }
