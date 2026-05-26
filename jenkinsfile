@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     environment {
@@ -24,25 +25,25 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    	    steps {
+            steps {
 
-        	script {
+                script {
 
-            	    def scannerHome = tool 'sonar-scanner'
+                    def scannerHome = tool 'sonar-scanner'
 
-            	    withSonarQubeEnv('sonarqube') {
+                    withSonarQubeEnv('sonarqube') {
 
-                	sh """
-                	${scannerHome}/bin/sonar-scanner \
-                	-Dsonar.projectKey=flask-app \
-                	-Dsonar.sources=. \
-                	-Dsonar.host.url=http://192.168.5.9:9000 \
-                	-Dsonar.login=squ_3d59ee098a34a6364046fb95f15aa1eeabc0da23
-                	"""
-            	    }
-        	}
-    	    }
-	}
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=flask-app \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://192.168.5.9:9000 \
+                        -Dsonar.token=squ_3d59ee098a34a6364046fb95f15aa1eeabc0da23
+                        """
+                    }
+                }
+            }
+        }
 
         stage('Docker Build') {
             steps {
@@ -62,8 +63,11 @@ pipeline {
                 script {
 
                     withDockerRegistry(
-                        [credentialsId: 'dockerhub',
-                        url: 'https://index.docker.io/v1/']) {
+                        [
+                            credentialsId: 'dockerhub',
+                            url: 'https://index.docker.io/v1/'
+                        ]
+                    ) {
 
                         sh 'docker push $IMAGE_NAME:$BUILD_NUMBER'
                     }
@@ -73,6 +77,7 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'Pipeline executed successfully!'
         }
