@@ -37,7 +37,7 @@ pipeline {
                         ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=flask-app \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://192.168.5.9:9000 \
+                        -Dsonar.host.url=http://sonarqube:9000 \
                         -Dsonar.token=squ_3d59ee098a34a6364046fb95f15aa1eeabc0da23
 			-x
                         """
