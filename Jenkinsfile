@@ -2,8 +2,18 @@ pipeline {
 
     agent any
 
+    parameters {
+        choice(
+            name: 'DEPLOY_TARGET',
+            choices: ['homelab', 'vps'],
+            description: 'Select deployment target'
+        )
+    }
+
     environment {
         IMAGE_NAME = "kiranlintech/flask-devops"
+        HOMELAB_HOST = "192.168.5.9"
+        VPS_HOST = "YOUR_VPS_IP"
     }
 
     stages {
@@ -11,7 +21,7 @@ pipeline {
         stage('Pull Code') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/kiranlintech/devops-project.git'
+                    url: 'https://github.com/kiranlintech/devops-project.git'
             }
         }
 
@@ -26,7 +36,6 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-
                 script {
 
                     def scannerHome = tool 'sonar-scanner'
@@ -37,8 +46,7 @@ pipeline {
                         ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=flask-app \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000 \
-                        -Dsonar.token=squ_3d59ee098a34a6364046fb95f15aa1eeabc0da23
+                        -Dsonar.host.url=http://sonarqube:9000
                         """
                     }
                 }
@@ -59,7 +67,6 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-
                 script {
 
                     withDockerRegistry(
@@ -69,8 +76,42 @@ pipeline {
                         ]
                     ) {
 
-                        sh 'docker push $IMAGE_NAME:$BUILD_NUMBER'
+                        sh """
+                        docker push $IMAGE_NAME:$BUILD_NUMBER
+                        docker tag $IMAGE_NAME:$BUILD_NUMBER $IMAGE_NAME:latest
+                        docker push $IMAGE_NAME:latest
+                        """
                     }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+
+                    def TARGET_HOST = ""
+
+                    if (params.DEPLOY_TARGET == "homelab") {
+                        TARGET_HOST = env.HOMELAB_HOST
+                    } else {
+                        TARGET_HOST = env.VPS_HOST
+                    }
+
+                    sh """
+                    ssh ubuntu@${TARGET_HOST} '
+                    docker pull ${IMAGE_NAME}:${BUILD_NUMBER}
+
+                    docker stop flask-app || true
+                    docker rm flask-app || true
+
+                    docker run -d \
+                      --name flask-app \
+                      -p 5000:5000 \
+                      --restart unless-stopped \
+                      ${IMAGE_NAME}:${BUILD_NUMBER}
+                    '
+                    """
                 }
             }
         }
@@ -79,7 +120,7 @@ pipeline {
     post {
 
         success {
-            echo 'Pipeline executed successfully!'
+            echo "Successfully deployed to ${params.DEPLOY_TARGET}"
         }
 
         failure {
