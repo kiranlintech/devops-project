@@ -107,7 +107,7 @@ pipeline {
 
                     docker run -d \
                       --name flask-app \
-                      -p 5000:5000 \
+                      -p 8083:5000 \
                       --restart unless-stopped \
                       ${IMAGE_NAME}:${BUILD_NUMBER}
                     '
