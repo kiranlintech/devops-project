@@ -13,7 +13,7 @@ pipeline {
     environment {
         IMAGE_NAME = "kiranlintech/flask-devops"
         HOMELAB_HOST = "192.168.5.9"
-        VPS_HOST = "213.210.37.106
+        VPS_HOST = "213.210.37.106"
     }
 
     stages {
