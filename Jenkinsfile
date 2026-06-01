@@ -21,7 +21,7 @@ pipeline {
         stage('Pull Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/kiranlintech/devops-project.git'
+                    url: 'https://github.com/kiranlintech/flask-app.git'
             }
         }
 
